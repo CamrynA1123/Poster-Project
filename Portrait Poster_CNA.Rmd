@@ -1,0 +1,208 @@
+---
+main_topsize: 0.2 #percent coverage of the poster
+main_bottomsize: 0.1
+#ESSENTIALS
+title: "Nigeria's Astronomical Maternal Deaths Unaffected by World Bank Aid"
+author:
+  - name: 'Camryn Allen'
+    affil: 1
+    main: true
+    orcid: '0000-0002-1099-3857'
+    email: ca9134a@american.edu
+affiliation:
+  - num: 1
+    address: Department of Politics, Governance, and Economics | School of International Service (SIS) | American University
+main_findings:
+  - "How does development aid impact Nigeria's continent-leading maternal mortality rate?"
+primary_colour: "#925653"
+secondary_colour: "#F7A5A5"
+accent_colour: "#841921"
+output: 
+  posterdown::posterdown_betterport:
+    self_contained: yes
+    pandoc_args: --mathjax
+    number_sections: false
+bibliography: packages.bib
+link-citations: true
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE,
+                      warning = FALSE,
+                      tidy = FALSE,
+                      message = FALSE,
+                      fig.align = 'center',
+                      out.width = "100%")
+options(knitr.table.format = "html") 
+
+library(dplyr)
+library(ggplot2)
+library(readr)
+library(tidyverse)
+library(rmdformats)
+library(patchwork)
+library(reshape2)
+```
+
+# Introduction
+
+The World Health Organization defines a "maternal death" as "a female death from any cause related to or aggravated by pregnancy or its management (excluding accidental or incidental causes) during pregnancy and childbirth or within 42 days to a year after termination of pregnancy." This project aims to examine how annual maternal deaths in Nigeria are impacted by World Bank (WB) aid to the country. Exploring the effect of foreign aid from leading international governance institutions, such as the World Bank, on maternal deaths in the most devastatingly affected areas, such as sub-Saharan Africa, is a crucial necessity if maternal deaths are to be effectively addressed and resolved everywhere. The expectation is that the World Bank's annual aid to Nigeria will have a negative impact on the country's maternal deaths (i.e. an increase in WB aid will lead to a decrease in Nigeria's maternal deaths).
+
+```{r, include=FALSE}
+knitr::write_bib(c('posterdown', 'rmarkdown','pagedown'), 'packages.bib')
+```
+
+# Methods
+
+Data reflecting Nigeria's annual maternal deaths between the years 2000 - 2020 and World Bank aid (USD) to Nigeria within the same time frame have been collected from the World Health Organization (2023) "Number of Maternal Deaths - Nigeria" data set and the World Bank's "Net Official Development Assistance and Official Aid Received (Current US$) - Nigeria" data set, respectively. 
+
+Key variables include:
+
+```{r, echo=TRUE, eval=FALSE}
+Deaths: annual maternal deaths within Nigeria
+AidDollars: WB annual aid to Nigeria
+Year: Individual year of data collection
+```
+
+```{r, eval=TRUE, echo=FALSE, fig.height=6, fig.cap='This bar graph depicts maternal deaths across 52 African countries in 2019 from the World Health Organization ["Number of Maternal Deaths - Nigeria" data set](https://data.worldbank.org/indicator/SH.MMR.DTHS?locations=NG) (2023).'}
+#MAIN GRAPH: MATERNAL DEATHS ACROSS COUNTRIES
+MatDeath = read_csv('MatDeath.csv')
+
+AfrMatDeath = 
+  MatDeath %>%
+  filter(`Country Name` %in% c('Angola', 'Algeria', 'Burundi', 'Benin', 'Burkina Faso', 'Bostswana', 'Central African Republic', "Cote d'Ivoire", 'Cameroon', 'Congo, Dem. Rep.', 'Congo, Rep.', 'Comoros', 'Cabo Verde', 'Djibouti', 'Egypt, Arab Rep.', 'Eritrea', 'Ethiopia', 'Gabon', 'Ghana', 'Guinea', 'Gambia, The', 'Guinea-Bissau', 'Equitorial Guinea', 'Kenya', 'Libya', 'Liberia', 'Lesotho', 'Morocco', 'Madagascar', 'Mali', 'Mozambique', 'Mauritania', 'Mauritius', 'Malawi', 'Namibia', 'Niger', 'Nigeria', 'Rwanda', 'Sudan', 'Senegal', 'Sierra Leone', 'Somalia', 'South Sudan', 'Sao Tome and Principe', 'Eswatini', 'Seychelles', 'Chad', 'Togo', 'Tunisia', 'Tanzania', 'Uganda', 'South Africa', 'Zambia', 'Zimbabwe'))
+
+AfrMatDeath$`Indicator Name` <- NULL
+AfrMatDeath$`Country Code` <- NULL
+AfrMatDeath$`Indicator Code` <- NULL
+names(AfrMatDeath)[names(AfrMatDeath) == "2020"] <- "CovidYear"
+names(AfrMatDeath)[names(AfrMatDeath) == "2019"] <- "CovidStart"
+AfrMatDeath$`Country Name` <- reorder(AfrMatDeath$`Country Name`, +AfrMatDeath$CovidStart)
+
+AfrMatDeath |>
+  ggplot(aes(x = CovidStart, y = `Country Name`))+ 
+  geom_bar(stat = 'identity', fill = '#E4257A', width = 0.85) + 
+  ggtitle('Maternal Deaths in Africa (2019)') + 
+  labs(
+    x = 'Annual Maternal Deaths',
+    y = 'Country'
+  ) + 
+  geom_text(aes(label = CovidStart), vjust = 0.5, hjust = -0.1, size = 2.75) +
+  scale_x_continuous(
+    expand = expansion(mult = c(0, 0.08)),
+    breaks = c(0, 20000, 40000, 60000, 80000),
+    labels = c('0', '20,000', '40,000', '60,000', '80,000')
+  ) +
+  theme_bw() + 
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,
+      face = 'bold'),
+    axis.title.x = element_text(face = 'bold'),
+    axis.title.y = element_text(face = 'bold')
+  ) #How to add more space between the graphs??
+```
+
+
+
+```{r, echo=FALSE, eval=TRUE, fig.cap='Nigeria maternal deaths between 2000 - 2020 have been isolated from the World Bank [Net Official Development Assistance and Official Aid Received (Current US$) - Nigeria data set](https://data.worldbank.org/indicator/DT.ODA.ALLD.CD?end=2020&locations=NG&start=2000).'}
+library(readxl)
+library(readr)
+NMDeaths <- read_excel('NMDeaths.xlsx')
+WBNAid <- read_excel('WBNAid.xlsx')
+
+DeathAid <- merge(NMDeaths, WBNAid, by = 'Year', all = TRUE)
+names(DeathAid)[names(DeathAid) == "WB Aid"] <- "AidDollars"
+
+NMDPlot = 
+  NMDeaths |>
+  ggplot(aes(x = Year, y = Deaths)) + 
+  geom_line(
+    color = '#E4257A'
+  ) +
+  geom_point() + 
+  ggtitle('Maternal Deaths in Nigeria (2000 - 2020)') + 
+  labs(
+    y = 'Annual Maternal Deaths'
+  ) +
+  scale_y_continuous(
+    breaks = c(60000, 65000, 70000, 75000, 80000, 85000), #How to make y axis start at 60K?
+    labels = c('60K', '65K','70K', '75K', '80K', '85K')
+  ) +
+  theme_bw() +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,
+      face = 'bold'),
+    axis.title.x = element_text(face = 'bold'),
+    axis.title.y = element_text(face = 'bold')
+  )
+NMDPlot #How to label points at 2000, 2005, 2010, 2015, 2020?
+
+```
+
+
+
+# Results
+
+```{r MinMaxTable, echo=FALSE, eval=TRUE}
+library(readxl)
+library(readr)
+library(knitr)
+library(kableExtra)
+NMDeaths <- read_excel('NMDeaths.xlsx')
+WBNAid <- read_excel('WBNAid.xlsx')
+DeathAid <- merge(NMDeaths, WBNAid, by = 'Year', all = TRUE)
+names(DeathAid)[names(DeathAid) == "WB Aid"] <- "AidDollars"
+
+DeathAidSum <- data.frame( #USE THIS TABLE!
+  Minimum = sapply(DeathAid, min),
+  Maximum = sapply(DeathAid, max)
+)
+
+kable(DeathAidSum)
+```
+The minimum maternal death count in Nigeria between the years 2000-2020 was 61,000, while the maximum reached 86,000 in 2019 (presumably affected by the COVID-19 pandemic). Additionally, the minimum World Bank annual aid to Nigeria was more than 167M USD in 2001 and maxes at more than 11.4B USD in 2006.  
+
+```{r, echo=FALSE, eval=TRUE}
+library(readxl)
+library(readr)
+NMDeaths <- read_excel('NMDeaths.xlsx')
+WBNAid <- read_excel('WBNAid.xlsx')
+
+DeathAid <- merge(NMDeaths, WBNAid, by = 'Year', all = TRUE)
+names(DeathAid)[names(DeathAid) == "WB Aid"] <- "AidDollars"
+DeathAid <- DeathAid[DeathAid$AidDollars < 6000000000, ] #How to fix the Y axis labels?? Do I limit or have entire dataset?
+
+ggplot(DeathAid, aes(x = Deaths, y = AidDollars)) +
+  geom_point() +
+  geom_smooth(method = 'lm', se = F, color = '#E4257A') +
+  ggtitle('A Relationship between Maternal Deaths and World Bank Aid in Nigeria') + 
+  labs(
+    y = 'Aid (USD)',
+    x = 'Annual Maternal Deaths'
+  ) +
+  scale_x_continuous(
+    breaks = c(60000, 65000, 70000, 75000, 80000, 85000), #How to make y axis start at 60K?
+    labels = c('60K', '65K','70K', '75K', '80K', '85K')
+  ) +
+  theme_bw() + 
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,
+      face = 'bold'),
+    axis.title.x = element_text(face = 'bold'),
+    axis.title.y = element_text(face = 'bold')
+  )
+
+```
+
+Despite the graph above depicting the semblance of a positive correlation between WB aid and maternal deaths, the statistical findings reflect that WB aid has an extremely minimal influence on maternal deaths in Nigeria. From these results, it can be concluded that WB aid does not adequately target nor effectively impact Nigeria's staggering maternal mortality rates. Visible in the graph above, even at the aid's peak, Nigeria's maternal deaths that year were seemingly unaffected. More research should be conducted to explore and hopefully disprove the possibility that an increase in development aid correlates to an increase in maternal death in Nigeria.
+
+
+
+# References
+
+The World Bank (2024). "Net Official Development Assistance and Official Aid Received (current US$) - Nigeria", Nigeria: https://data.worldbank.org/indicator/DT.ODA.ALLD.CD?end=2020&locations=NG&start=2000 
+
+The World Health Organizaztion (2023). "Number of Maternal Deaths - Nigeria", Nigeria, The World Bank: https://data.worldbank.org/indicator/SH.MMR.DTHS?locations=NG 
