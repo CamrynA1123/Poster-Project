@@ -2,7 +2,7 @@
 main_topsize: 0.2 #percent coverage of the poster
 main_bottomsize: 0.1
 #ESSENTIALS
-title: "Nigeria's Astronomical Maternal Deaths Unaffected by World Bank Aid"
+title: "How does development aid impact Nigeria's maternal mortality rate?"
 author:
   - name: 'Camryn Allen'
     affil: 1
@@ -13,7 +13,7 @@ affiliation:
   - num: 1
     address: Department of Politics, Governance, and Economics | School of International Service (SIS) | American University
 main_findings:
-  - "How does development aid impact Nigeria's continent-leading maternal mortality rate?"
+  - "Nigeria's Astronomical Maternal Deaths Unaffected by World Bank Aid"
 primary_colour: "#925653"
 secondary_colour: "#F7A5A5"
 accent_colour: "#841921"
@@ -64,13 +64,13 @@ AidDollars: WB annual aid to Nigeria
 Year: Individual year of data collection
 ```
 
-```{r, eval=TRUE, echo=FALSE, fig.height=6, fig.cap='This bar graph depicts maternal deaths across 52 African countries in 2019 from the World Health Organization ["Number of Maternal Deaths - Nigeria" data set](https://data.worldbank.org/indicator/SH.MMR.DTHS?locations=NG) (2023).'}
+```{r, eval=TRUE, echo=FALSE, fig.height=6, fig.cap='This bar graph depicts data of 20 African countries with the highest maternal deaths in 2019 from the World Health Organization ["Number of Maternal Deaths - Nigeria" data set](https://data.worldbank.org/indicator/SH.MMR.DTHS?locations=NG) (2023).'}
 #MAIN GRAPH: MATERNAL DEATHS ACROSS COUNTRIES
 MatDeath = read_csv('MatDeath.csv')
 
 AfrMatDeath = 
   MatDeath %>%
-  filter(`Country Name` %in% c('Angola', 'Algeria', 'Burundi', 'Benin', 'Burkina Faso', 'Bostswana', 'Central African Republic', "Cote d'Ivoire", 'Cameroon', 'Congo, Dem. Rep.', 'Congo, Rep.', 'Comoros', 'Cabo Verde', 'Djibouti', 'Egypt, Arab Rep.', 'Eritrea', 'Ethiopia', 'Gabon', 'Ghana', 'Guinea', 'Gambia, The', 'Guinea-Bissau', 'Equitorial Guinea', 'Kenya', 'Libya', 'Liberia', 'Lesotho', 'Morocco', 'Madagascar', 'Mali', 'Mozambique', 'Mauritania', 'Mauritius', 'Malawi', 'Namibia', 'Niger', 'Nigeria', 'Rwanda', 'Sudan', 'Senegal', 'Sierra Leone', 'Somalia', 'South Sudan', 'Sao Tome and Principe', 'Eswatini', 'Seychelles', 'Chad', 'Togo', 'Tunisia', 'Tanzania', 'Uganda', 'South Africa', 'Zambia', 'Zimbabwe'))
+  filter(`Country Name` %in% c('Angola', 'Benin', 'Bostswana', "Cote d'Ivoire", 'Cameroon', 'Congo, Dem. Rep.', 'Ethiopia', 'Ghana', 'Guinea', 'Equitorial Guinea', 'Kenya', 'Madagascar', 'Mali', 'Malawi', 'Niger', 'Nigeria', 'Sudan', 'Somalia', 'South Sudan', 'Chad', 'Tanzania', 'Uganda'))
 
 AfrMatDeath$`Indicator Name` <- NULL
 AfrMatDeath$`Country Code` <- NULL
@@ -82,7 +82,7 @@ AfrMatDeath$`Country Name` <- reorder(AfrMatDeath$`Country Name`, +AfrMatDeath$C
 AfrMatDeath |>
   ggplot(aes(x = CovidStart, y = `Country Name`))+ 
   geom_bar(stat = 'identity', fill = '#E4257A', width = 0.85) + 
-  ggtitle('Maternal Deaths in Africa (2019)') + 
+  ggtitle('Top 20 Leading Maternal Deaths in Africa (2019)') + 
   labs(
     x = 'Annual Maternal Deaths',
     y = 'Country'
@@ -95,12 +95,15 @@ AfrMatDeath |>
   ) +
   theme_bw() + 
   theme(
+    panel.grid = element_blank(),
     plot.title = element_text(
       hjust = 0.5,
       face = 'bold'),
+    axis.text.x = element_blank(), 
+    axis.ticks.x = element_blank(),
     axis.title.x = element_text(face = 'bold'),
     axis.title.y = element_text(face = 'bold')
-  ) #How to add more space between the graphs??
+  ) 
 ```
 
 
@@ -173,16 +176,17 @@ WBNAid <- read_excel('WBNAid.xlsx')
 DeathAid <- merge(NMDeaths, WBNAid, by = 'Year', all = TRUE)
 names(DeathAid)[names(DeathAid) == "WB Aid"] <- "AidDollars"
 DeathAid <- DeathAid[DeathAid$AidDollars < 6000000000, ] #How to fix the Y axis labels?? Do I limit or have entire dataset?
+DeathAid$Money <- DeathAid$AidDollars / 1000000000
 
-ggplot(DeathAid, aes(x = Deaths, y = AidDollars)) +
+ggplot(DeathAid, aes(y = Deaths, x = Money)) +
   geom_point() +
   geom_smooth(method = 'lm', se = F, color = '#E4257A') +
   ggtitle('A Relationship between Maternal Deaths and World Bank Aid in Nigeria') + 
   labs(
-    y = 'Aid (USD)',
-    x = 'Annual Maternal Deaths'
+    x = 'Aid USD (Billions)',
+    y = 'Annual Maternal Deaths'
   ) +
-  scale_x_continuous(
+  scale_y_continuous(
     breaks = c(60000, 65000, 70000, 75000, 80000, 85000), #How to make y axis start at 60K?
     labels = c('60K', '65K','70K', '75K', '80K', '85K')
   ) +
@@ -197,7 +201,7 @@ ggplot(DeathAid, aes(x = Deaths, y = AidDollars)) +
 
 ```
 
-Despite the graph above depicting the semblance of a positive correlation between WB aid and maternal deaths, the statistical findings reflect that WB aid has an extremely minimal influence on maternal deaths in Nigeria. From these results, it can be concluded that WB aid does not adequately target nor effectively impact Nigeria's staggering maternal mortality rates. Visible in the graph above, even at the aid's peak, Nigeria's maternal deaths that year were seemingly unaffected. More research should be conducted to explore and hopefully disprove the possibility that an increase in development aid correlates to an increase in maternal death in Nigeria.
+The graph above reveals a positive correlation between WB aid and maternal deaths in Nigeria throughout 2000 - 2020. Despite the statistical tests reflecting that WB aid has an extremely minimal influence on maternal deaths in Nigeria, it is important to emphasize the trend of worsening humanitarian issues attracting increasingly higher amounts of foreign aid in hopes of aggressively seeking solutions.  Visible in the graph above, Nigeria's maternal deaths are seemingly unaffected by increasing influxes of development aid.From these results, it can be concluded that WB aid has designated and raised development aid to Nigeria in general over the past two decades, however this aid has not yet caused a significant decrease in Nigeria's annual maternal deaths. More research should be conducted to explore root causes and obstacles that explain why gradual increases in development aid to Nigeria correlate to or align with a continual increase in maternal death in Nigeria.
 
 
 
